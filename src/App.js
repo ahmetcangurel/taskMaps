@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Dimensions, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import styles from './App.Style'
 
 import BottomSheet from 'react-native-gesture-bottom-sheet';
@@ -10,7 +10,6 @@ const App = () => {
   const GOOGLE_MAPS_APIKEY = 'AIzaSyDIda-GmIFQuURB9c_iPRwMKOpmVu0xAsM';
   const bottomSheet = useRef();
   const [adressList, setAdressList] = useState([])
-  const [adressItem, setAdressItem] = useState([])
 
   const ankaraCoords = {
     latitude: 39.925533,
@@ -51,25 +50,43 @@ const App = () => {
 
   return (
     <View style={styles.container}>
+
+      {/* Button */}
       <TouchableOpacity
-        onPress={() => bottomSheet.current.show()}
+        onPress={() => {
+          bottomSheet.current.show()
+          console.log(adressList)
+        }}
         style={styles.button}
       >
         <Text>Show Distances</Text>
       </TouchableOpacity>
-      <BottomSheet hasDraggableIcon ref={bottomSheet} height={600}  >
+
+      {/* BottomSheet */}
+      <BottomSheet hasDraggableIcon ref={bottomSheet} height={600}>
         <View style={styles.bottomSheetContainer}>
-          <View>
-            <Text style={styles.adressSubTitle}>Başlangıç Adresiniz:</Text>
-            <Text style={styles.adressDescription}>{adressItem.originAdress} </Text>
-          </View>
-          <View>
-            <Text style={styles.adressSubTitle}>Varış Adresiniz:</Text>
-            <Text style={styles.adressDescription}>{adressItem.destinationAdress}</Text>
-          </View>
-          <Text>Mesafeniz: {adressItem.distances} KM</Text>
+          <FlatList
+            data={adressList}
+            renderItem={({item}) => {
+              return (
+                <View>
+                  <View>
+                    <Text style={styles.adressSubTitle}>Başlangıç Adresiniz:</Text>
+                    <Text style={styles.adressDescription}>{item.originAdress} </Text>
+                  </View>
+                  <View>
+                    <Text style={styles.adressSubTitle}>Varış Adresiniz:</Text>
+                    <Text style={styles.adressDescription}>{item.destinationAdress}</Text>
+                  </View>
+                  <Text>Mesafeniz: {item.distances} KM</Text>
+                  <View style={styles.separator} />
+                </View>
+              )
+            }}
+          />
         </View>
       </BottomSheet>
+
       <MapView
         style={styles.mapView}
         initialRegion={ankaraCoords}>
@@ -85,7 +102,6 @@ const App = () => {
                 coordinate={city.coord}
               />
               <MapViewDirections
-                key={city}
                 origin={ankaraCoords}
                 destination={city.coord}
                 apikey={GOOGLE_MAPS_APIKEY}
@@ -93,13 +109,14 @@ const App = () => {
                 mode='DRIVING'
                 strokeWidth={4}
                 strokeColor='hotpink'
-                onReady={(res => {
-                  setAdressItem(...adressItem,{
+                onReady={(res) => {
+                  let adressObject = {
                     distances: res.distance,
                     originAdress: res.legs[0].start_address,
                     destinationAdress: res.legs[0].end_address
-                  })
-                })}
+                  }
+                  setAdressList(prev => [...prev, adressObject])
+                }}
               />
             </>
           )
