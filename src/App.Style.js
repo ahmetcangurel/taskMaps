@@ -27,4 +27,10 @@ export default styles = StyleSheet.create({
         fontWeight: '600',
         marginVertical: 8,
     },
+    separator: {
+        width: '100%',
+        height: 1,
+        backgroundColor: 'gray',
+        marginVertical: 10,
+    },
 })
